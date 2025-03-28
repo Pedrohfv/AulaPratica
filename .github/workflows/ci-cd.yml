@@ -5,20 +5,25 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:  # Permite execução manual
 
 jobs:
   quality-checks:
     name: Quality Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        path: 'AulaPratica'
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
+        cache: 'poetry'
 
     - name: Install Poetry
       run: |
@@ -27,34 +32,56 @@ jobs:
 
     - name: Install dependencies
       run: poetry install --with dev
-      working-directory: AulaPratica
+      working-directory: ${{ github.workspace }}/AulaPratica
 
     - name: Create reports directory
       run: mkdir -p test-reports
-      working-directory: AulaPratica
+      working-directory: ${{ github.workspace }}/AulaPratica
 
+    # Testes e Análises
     - name: Run tests with pytest
       run: |
         poetry run pytest tests/ \
           --junitxml=test-reports/junit.xml \
           --cov=src \
-          --cov-report=xml:test-reports/coverage.xml
-      working-directory: AulaPratica
+          --cov-report=xml:test-reports/coverage.xml \
+          --cov-report=html:test-reports/coverage-html
+      working-directory: ${{ github.workspace }}/AulaPratica
 
     - name: Run Flake8
-      run: poetry run flake8 src/
-      working-directory: AulaPratica
+      run: poetry run flake8 src/ --output-file=test-reports/flake8.log
+      working-directory: ${{ github.workspace }}/AulaPratica
 
     - name: Run Pylint
-      run: poetry run pylint src/ --exit-zero
-      working-directory: AulaPratica
+      run: poetry run pylint src/ --output=test-reports/pylint.json --exit-zero
+      working-directory: ${{ github.workspace }}/AulaPratica
 
     - name: Run Mypy
-      run: poetry run mypy src/
-      working-directory: AulaPratica
+      run: poetry run mypy src/ --html-report test-reports/mypy
+      working-directory: ${{ github.workspace }}/AulaPratica
 
-    - name: Upload test reports
-      uses: actions/upload-artifact@v3
+    - name: Run Radon analysis
+      run: |
+        poetry run radon cc src/ -a > test-reports/radon_cc.txt
+        poetry run radon mi src/ > test-reports/radon_mi.txt
+      working-directory: ${{ github.workspace }}/AulaPratica
+
+    # Upload de relatórios
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
       with:
         name: test-reports
-        path: AulaPratica/test-reports/
+        path: ${{ github.workspace }}/AulaPratica/test-reports/
+        retention-days: 5
+
+    # Build do pacote
+    - name: Build package
+      run: poetry build
+      working-directory: ${{ github.workspace }}/AulaPratica
+
+    - name: Upload package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package
+        path: ${{ github.workspace }}/AulaPratica/dist/*
+        retention-days: 5
