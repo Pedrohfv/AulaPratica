@@ -1,47 +1,40 @@
 import pygame
 import random
-from typing import Tuple
+from typing import Tuple  # Remova esta linha se não estiver usando Tuple
 
-# Constantes do jogo
-LARGURA_TELA = 800
-ALTURA_TELA = 600
-RAIO_BOLA = 30
-AZUL = (30, 144, 255)
-BRANCO = (255, 255, 255)
 
 class Bola:
+
     def __init__(self, x: int, y: int, vel_x: int, vel_y: int) -> None:
         self.x = x
         self.y = y
         self.vel_x = vel_x
         self.vel_y = vel_y
-    
+
     def mover(self) -> None:
-        # Movimento preliminar
         new_x = self.x + self.vel_x
         new_y = self.y + self.vel_y
-        
-        # Verifica e corrige os limites
+
         if new_x - RAIO_BOLA <= 0:
             new_x = RAIO_BOLA
             self.vel_x *= -1
         elif new_x + RAIO_BOLA >= LARGURA_TELA:
             new_x = LARGURA_TELA - RAIO_BOLA
             self.vel_x *= -1
-            
+
         if new_y - RAIO_BOLA <= 0:
             new_y = RAIO_BOLA
             self.vel_y *= -1
         elif new_y + RAIO_BOLA >= ALTURA_TELA:
             new_y = ALTURA_TELA - RAIO_BOLA
             self.vel_y *= -1
-        
-        # Aplica as posições corrigidas
+
         self.x = new_x
         self.y = new_y
-    
+
     def desenhar(self, tela: pygame.Surface) -> None:
         pygame.draw.circle(tela, AZUL, (self.x, self.y), RAIO_BOLA)
+
 
 def criar_bola_aleatoria() -> Bola:
     x = random.randint(RAIO_BOLA, LARGURA_TELA - RAIO_BOLA)
@@ -49,6 +42,7 @@ def criar_bola_aleatoria() -> Bola:
     vel_x = random.choice([-4, 4])
     vel_y = random.choice([-4, 4])
     return Bola(x, y, vel_x, vel_y)
+
 
 def main():
     pygame.init()
@@ -73,6 +67,7 @@ def main():
         relogio.tick(60)
     
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()
