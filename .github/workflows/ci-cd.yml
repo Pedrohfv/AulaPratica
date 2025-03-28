@@ -14,57 +14,25 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    
+      with:
+        path: 'AulaPratica'  # ← Chave da solução!
+
     - name: Set up Python 3.10
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
-    
+
     - name: Install Poetry
       run: |
         curl -sSL https://install.python-poetry.org | python3 -
         echo "$HOME/.local/bin" >> $GITHUB_PATH
-      working-directory: ${{ github.workspace }}  # ← Corrigido
-    
-    - name: Configure cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/pypoetry
-          ~/.cache/pip
-        key: poetry-${{ runner.os }}-${{ hashFiles('AulaPratica/poetry.lock') }}
-    
+
     - name: Install dependencies
       run: poetry install --with dev
-      working-directory: AulaPratica  # ← Caminho correto
-    
-    # Demais steps devem ter working-directory: AulaPratica
+      working-directory: ${{ github.workspace }}/AulaPratica  # ← Caminho absoluto
+
     - name: Run tests
       run: poetry run pytest tests/
-      working-directory: AulaPratica
+      working-directory: ${{ github.workspace }}/AulaPratica
 
-  build-package:
-    name: Build Package
-    needs: quality-checks
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-    
-    - name: Install Poetry
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-    
-    - name: Build package
-      run: |
-        poetry build
-        mkdir artifact
-        cp dist/* artifact/
-      working-directory: AulaPratica
+    # Outros steps permanecem com working
