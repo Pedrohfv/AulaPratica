@@ -15,7 +15,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        path: 'AulaPratica'  # ← Chave da solução!
+        path: 'AulaPratica'
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v4
@@ -29,10 +29,54 @@ jobs:
 
     - name: Install dependencies
       run: poetry install --with dev
-      working-directory: ${{ github.workspace }}/AulaPratica  # ← Caminho absoluto
-
-    - name: Run tests
-      run: poetry run pytest tests/
       working-directory: ${{ github.workspace }}/AulaPratica
 
-    # Outros steps permanecem com working
+    - name: Run tests with pytest
+      run: |
+        poetry run pytest tests/ -v \
+          --junitxml=test-results/results.xml \
+          --cov=src \
+          --cov-report=xml:coverage.xml \
+          --cov-report=html:cov_html
+      working-directory: ${{ github.workspace }}/AulaPratica
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          ${{ github.workspace }}/AulaPratica/test-results/
+          ${{ github.workspace }}/AulaPratica/coverage.xml
+          ${{ github.workspace }}/AulaPratica/cov_html/
+
+    - name: Run Flake8
+      run: poetry run flake8 src/
+      working-directory: ${{ github.workspace }}/AulaPratica
+
+    - name: Run Pylint
+      run: poetry run pylint src/ --output-format=json:pylint_results.json || true
+      working-directory: ${{ github.workspace }}/AulaPratica
+
+    - name: Upload lint results
+      uses: actions/upload-artifact@v3
+      with:
+        name: lint-results
+        path: ${{ github.workspace }}/AulaPratica/pylint_results.json
+
+    - name: Run Mypy
+      run: poetry run mypy src/ --html-report mypy_report
+      working-directory: ${{ github.workspace }}/AulaPratica
+
+    - name: Run Radon
+      run: |
+        poetry run radon cc src/ -a > radon_results.txt
+        poetry run radon mi src/ >> radon_results.txt
+      working-directory: ${{ github.workspace }}/AulaPratica
+
+    - name: Upload quality reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: quality-reports
+        path: |
+          ${{ github.workspace }}/AulaPratica/mypy_report/
+          ${{ github.workspace }}/AulaPratica/radon_results.txt
