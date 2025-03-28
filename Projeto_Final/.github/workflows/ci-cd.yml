@@ -1,0 +1,85 @@
+name: Python CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
+    - name: Configure cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pypoetry
+          ~/.cache/pip
+        key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          poetry-${{ runner.os }}-
+    
+    - name: Install dependencies
+      run: poetry install --with dev
+    
+    - name: Run tests with pytest
+      run: poetry run pytest tests/ -v
+    
+    - name: Run Flake8
+      run: poetry run flake8 src/
+    
+    - name: Run Pylint
+      run: poetry run pylint src/
+    
+    - name: Run Mypy
+      run: poetry run mypy src/
+    
+    - name: Run Radon
+      run: poetry run radon cc src/ -a
+
+  build-package:
+    name: Build Package
+    needs: quality-checks
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
+    - name: Build package
+      run: |
+        poetry build
+        mkdir artifact
+        cp dist/* artifact/
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-package
+        path: artifact/
