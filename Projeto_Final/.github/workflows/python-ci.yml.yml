@@ -32,3 +32,5 @@ jobs:
     
     - name: Check types with mypy
       run: poetry run mypy src/
+
+      #
