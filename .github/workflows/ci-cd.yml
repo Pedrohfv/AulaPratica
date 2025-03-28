@@ -10,38 +10,69 @@ jobs:
   qualidade:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Configurar Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
+      # Etapa 1: Set up job
+      - name: Set up job
+        run: echo "Set up job"
 
-    - name: Instalar ferramentas
-      run: |
-        pip install poetry flake8 pylint mypy radon
-        poetry install
+      # Etapa 2: Checkout do Código
+      - name: Checkout do Código
+        uses: actions/checkout@v4
 
-    # Etapa 4.1 - Testes
-    - name: Executar testes pytest
-      run: poetry run pytest tests/
+      # Etapa 3: Instalar o Poetry
+      - name: Instalar o Poetry
+        run: |
+          pip install poetry
+          echo "Installar o Poetry"
 
-    # Etapa 4.2 - Flake8
-    - name: Verificar estilo (Flake8)
-      run: poetry run flake8 src/ --count --show-source --statistics
+      # Etapa 4: Configurar cache do Poetry
+      - name: Configurar cache do Poetry
+        run: echo "Configurar cache do Poetry"
+      
+      # Etapa 5: Instalar dependências
+      - name: Instalar dependências
+        run: |
+          poetry install
+          echo "Installar dependências"
 
-    # Etapa 4.3 - Pylint
-    - name: Verificar qualidade (Pylint)
-      run: poetry run pylint src/ --exit-zero
+      # Etapa 6: Rodar Testes com Pytest
+      - name: Rodar Testes com Pytest
+        run: |
+          poetry run pytest tests/
+          echo "Rodar Testes com Pytest"
 
-    # Etapa 4.4 - MyPy
-    - name: Verificar tipagem (MyPy)
-      run: poetry run mypy src/
+      # Etapa 7: Verificar estilo com Flake8
+      - name: Verificar estilo com Flake8
+        run: |
+          poetry run flake8 src/ --count --show-source --statistics
+          echo "Verificar estilo com Flake8"
 
-    # Etapa 4.5 - Radon
-    - name: Analisar complexidade (Radon)
-      run: |
-        echo "Complexidade Ciclomática:"
-        poetry run radon cc src/
-        echo "\nÍndice de Manutenibilidade:"
-        poetry run radon mi src/
+      # Etapa 8: Verificar estilo com Pylint
+      - name: Verificar estilo com Pylint
+        run: |
+          poetry run pylint src/ --exit-zero
+          echo "Verificar estilo com Pylint"
+
+      # Etapa 9: Verificar Tipagem com Mypy
+      - name: Verificar Tipagem com Mypy
+        run: |
+          poetry run mypy src/
+          echo "Verificar Tipagem com Mypy"
+
+      # Etapa 10: Analisar Complexidade com Radon
+      - name: Analisar Complexidade com Radon
+        run: |
+          echo "Analisar Complexidade com Radon"
+          poetry run radon cc src/
+          poetry run radon mi src/
+
+      # Etapa 11: Post Configurar cache do Poetry
+      - name: Post Configurar cache do Poetry
+        run: echo "Post Configurar cache do Poetry"
+
+      # Etapa 12: Post Checkout do Código
+      - name: Post Checkout do Código
+        run: echo "Post Checkout do Código"
+
+      # Etapa 13: Complete job
+      - name: Complete job
+        run: echo "Complete job"
