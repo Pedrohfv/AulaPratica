@@ -1,10 +1,9 @@
 import pygame
 import random
 
-# Constantes exportáveis
 __all__ = ['Bola', 'RAIO_BOLA', 'LARGURA_TELA', 'ALTURA_TELA', 'criar_bola_aleatoria']
 
-# Configurações do jogo
+# Configurações
 LARGURA_TELA = 800
 ALTURA_TELA = 600
 RAIO_BOLA = 30
@@ -19,15 +18,26 @@ class Bola:
         self.vel_y = vel_y
 
     def mover(self) -> None:
+        # Movimento preliminar
         new_x = self.x + self.vel_x
         new_y = self.y + self.vel_y
-
-        # Colisão com bordas
-        if new_x - RAIO_BOLA <= 0 or new_x + RAIO_BOLA >= LARGURA_TELA:
+        
+        # Colisão com correção de posição
+        if new_x - RAIO_BOLA <= 0:
+            new_x = RAIO_BOLA
             self.vel_x *= -1
-        if new_y - RAIO_BOLA <= 0 or new_y + RAIO_BOLA >= ALTURA_TELA:
+        elif new_x + RAIO_BOLA >= LARGURA_TELA:
+            new_x = LARGURA_TELA - RAIO_BOLA
+            self.vel_x *= -1
+            
+        if new_y - RAIO_BOLA <= 0:
+            new_y = RAIO_BOLA
             self.vel_y *= -1
-
+        elif new_y + RAIO_BOLA >= ALTURA_TELA:
+            new_y = ALTURA_TELA - RAIO_BOLA
+            self.vel_y *= -1
+        
+        # Atualiza posições
         self.x = new_x
         self.y = new_y
 
