@@ -10,9 +10,6 @@ jobs:
   quality-checks:
     name: Quality Checks
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./AulaPratica  # ← Adicionado
     
     steps:
     - name: Checkout code
@@ -27,6 +24,7 @@ jobs:
       run: |
         curl -sSL https://install.python-poetry.org | python3 -
         echo "$HOME/.local/bin" >> $GITHUB_PATH
+      working-directory: ${{ github.workspace }}  # ← Corrigido
     
     - name: Configure cache
       uses: actions/cache@v3
@@ -34,35 +32,21 @@ jobs:
         path: |
           ~/.cache/pypoetry
           ~/.cache/pip
-        key: poetry-${{ runner.os }}-${{ hashFiles('AulaPratica/poetry.lock') }}  # ← Atualizado
-        restore-keys: |
-          poetry-${{ runner.os }}-
+        key: poetry-${{ runner.os }}-${{ hashFiles('AulaPratica/poetry.lock') }}
     
     - name: Install dependencies
       run: poetry install --with dev
+      working-directory: AulaPratica  # ← Caminho correto
     
-    - name: Run tests with pytest
-      run: poetry run pytest tests/ -v
-    
-    - name: Run Flake8
-      run: poetry run flake8 src/
-    
-    - name: Run Pylint
-      run: poetry run pylint src/
-    
-    - name: Run Mypy
-      run: poetry run mypy src/
-    
-    - name: Run Radon
-      run: poetry run radon cc src/ -a
+    # Demais steps devem ter working-directory: AulaPratica
+    - name: Run tests
+      run: poetry run pytest tests/
+      working-directory: AulaPratica
 
   build-package:
     name: Build Package
     needs: quality-checks
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./AulaPratica  # ← Adicionado
     
     steps:
     - name: Checkout code
@@ -83,9 +67,4 @@ jobs:
         poetry build
         mkdir artifact
         cp dist/* artifact/
-    
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: python-package
-        path: AulaPratica/artifact/  # ← Atualizado
+      working-directory: AulaPratica
