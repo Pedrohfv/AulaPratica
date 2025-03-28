@@ -10,6 +10,9 @@ jobs:
   quality-checks:
     name: Quality Checks
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./AulaPratica  # ← Adicionado
     
     steps:
     - name: Checkout code
@@ -31,7 +34,7 @@ jobs:
         path: |
           ~/.cache/pypoetry
           ~/.cache/pip
-        key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+        key: poetry-${{ runner.os }}-${{ hashFiles('AulaPratica/poetry.lock') }}  # ← Atualizado
         restore-keys: |
           poetry-${{ runner.os }}-
     
@@ -57,6 +60,9 @@ jobs:
     name: Build Package
     needs: quality-checks
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./AulaPratica  # ← Adicionado
     
     steps:
     - name: Checkout code
@@ -82,4 +88,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: python-package
-        path: artifact/
+        path: AulaPratica/artifact/  # ← Atualizado
